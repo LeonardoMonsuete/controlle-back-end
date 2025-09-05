@@ -25,6 +25,10 @@
 
 [Nest](https://github.com/nestjs/nest) framework TypeScript starter repository.
 
+## About the Project
+
+Controlle is a financial management tool designed to track and balance cash flow, including accounts payable and receivable. This flexible solution is suitable for both personal use and professional applications, providing a solid foundation for managing expenses and revenue efficiently.
+
 ## Project setup
 
 ```bash
