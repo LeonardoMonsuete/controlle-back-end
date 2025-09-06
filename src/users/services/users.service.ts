@@ -32,8 +32,7 @@ export class UsersService {
       );
     }
 
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-call
-    userData.password = bcryptHashSync(userData.password, 10) as string;
+    userData.password = bcryptHashSync(userData.password, 10);
 
     return this.usersRepository.save(userData);
   }
@@ -61,8 +60,7 @@ export class UsersService {
     }
 
     if (userData.password !== existingUserName?.password) {
-      // eslint-disable-next-line @typescript-eslint/no-unsafe-call
-      userData.password = bcryptHashSync(userData.password, 10) as string;
+      userData.password = bcryptHashSync(userData.password, 10);
     }
 
     userData.updatedAt = new Date();

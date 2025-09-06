@@ -3,14 +3,19 @@ import {
   Controller,
   Delete,
   Get,
+  HttpCode,
+  HttpStatus,
   Param,
   Post,
   Put,
+  UseGuards,
 } from '@nestjs/common';
 import { UsersDto } from '../dtos';
 import { UsersService } from '../services/users.service';
 import { UserEntity } from 'src/db/entities/users.entity';
+import { AuthGuard } from 'src/auth/auth.guard';
 
+@UseGuards(AuthGuard)
 @Controller('user')
 export class UsersController {
   constructor(private readonly usersService: UsersService) {}
@@ -43,18 +48,9 @@ export class UsersController {
     return await this.usersService.update(id, userData);
   }
 
+  @HttpCode(HttpStatus.OK)
   @Delete('/delete/:id')
   async delete(@Param('id') id: number): Promise<number | undefined> {
     return this.usersService.delete(id);
   }
-
-  //   @Post('/login')
-  //   login() {
-  //     return user;
-  //   }
-
-  //   @Post('/logout')
-  //   logout() {
-  //     return user;
-  //   }
 }
