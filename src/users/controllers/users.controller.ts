@@ -1,30 +1,56 @@
-import { Body, Controller, Get, Param, Post } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Delete,
+  Get,
+  HttpCode,
+  HttpStatus,
+  Param,
+  Post,
+  Put,
+  UseGuards,
+} from '@nestjs/common';
 import { UsersDto } from '../dtos';
+import { UsersService } from '../services/users.service';
+import { UserEntity } from 'src/db/entities/users.entity';
+import { AuthGuard } from 'src/auth/auth.guard';
 
+@UseGuards(AuthGuard)
 @Controller('user')
 export class UsersController {
+  constructor(private readonly usersService: UsersService) {}
+
   @Post('/create')
-  create(@Body() user: UsersDto) {
-    return user;
+  create(@Body() userData: UsersDto) {
+    return this.usersService.create(userData);
   }
 
   @Get()
-  list(): string {
-    return 'user';
+  async list(): Promise<UserEntity[] | null> {
+    return await this.usersService.findAll();
   }
 
   @Get('/details/:id')
-  findById(@Param('id') id: string): string {
-    return `buscando ${id}`;
+  async find(@Param('id') id: number): Promise<UsersDto | undefined> {
+    return await this.usersService.findById(id);
   }
 
-  //   @Post('/login')
-  //   login() {
-  //     return user;
-  //   }
+  @Get('/edit/:id')
+  async edit(@Param('id') id: number): Promise<UsersDto | undefined> {
+    return await this.usersService.findById(id);
+  }
 
-  //   @Post('/logout')
-  //   logout() {
-  //     return user;
-  //   }
+  @Put('/update/:id')
+  async update(
+    @Param('id') id: number,
+    @Body() userData: UsersDto,
+  ): Promise<number | undefined> {
+    return await this.usersService.update(id, userData);
+  }
+
+  @HttpCode(HttpStatus.OK)
+  @Delete('/delete/:id')
+  async delete(@Param('id') id: number): Promise<number | undefined> {
+    return this.usersService.delete(id);
+  }
 }

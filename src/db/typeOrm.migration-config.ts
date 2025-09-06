@@ -1,6 +1,9 @@
 import { ConfigService } from '@nestjs/config';
 import { config } from 'dotenv';
 import { DataSource } from 'typeorm';
+import { UserEntity } from './entities/users.entity';
+import { ProfileEntity } from './entities/profile.entity';
+import { UserProfileEntity } from './entities/user_profile.entity';
 
 config();
 
@@ -13,7 +16,7 @@ export default new DataSource({
   username: configService.get<string>('DB_USER'),
   password: configService.get<string>('DB_PASSWORD'),
   database: configService.get<string>('DB_NAME'),
-  entities: [],
+  entities: [UserEntity, ProfileEntity, UserProfileEntity],
   migrations: [__dirname + '/migrations/*.ts'],
   synchronize: false,
 });
