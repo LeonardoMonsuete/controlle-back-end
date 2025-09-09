@@ -12,7 +12,6 @@ import {
 } from '@nestjs/common';
 import { UsersDto } from '../dtos';
 import { UsersService } from '../services/users.service';
-import { UserEntity } from 'src/db/entities/users.entity';
 import { AuthGuard } from 'src/auth/auth.guard';
 
 @UseGuards(AuthGuard)
@@ -21,22 +20,22 @@ export class UsersController {
   constructor(private readonly usersService: UsersService) {}
 
   @Post('/create')
-  create(@Body() userData: UsersDto) {
-    return this.usersService.create(userData);
+  async create(@Body() userData: UsersDto): Promise<UsersDto> {
+    return await this.usersService.create(userData);
   }
 
   @Get()
-  async list(): Promise<UserEntity[] | null> {
+  async list(): Promise<UsersDto[] | []> {
     return await this.usersService.findAll();
   }
 
   @Get('/details/:id')
-  async find(@Param('id') id: number): Promise<UsersDto | undefined> {
+  async find(@Param('id') id: number): Promise<UsersDto | null> {
     return await this.usersService.findById(id);
   }
 
   @Get('/edit/:id')
-  async edit(@Param('id') id: number): Promise<UsersDto | undefined> {
+  async edit(@Param('id') id: number): Promise<UsersDto | null> {
     return await this.usersService.findById(id);
   }
 
