@@ -100,3 +100,80 @@ Nest is an MIT-licensed open source project. It can grow thanks to the sponsors 
 ## License
 
 Nest is [MIT licensed](https://github.com/nestjs/nest/blob/master/LICENSE).
+
+## Architecture
+
+flowchart TD
+subgraph Frontend [NextJS - Frontend]
+UI[Dashboard + Charts + CSV Upload + Admin Panel]
+WS[WebSocket Notifications]
+end
+
+    subgraph Backend [NestJS - API Backend]
+        Auth[Auth Module - JWT + Roles]
+        Users[Users Module]
+        Transactions[Transactions Module]
+        Reports[Reports Module]
+        Importer[CSV Import Module]
+        Auditor[Audit Module]
+        subgraph Workers [NestJS Worker - Bull]
+            CSVWorker[CSV Processor]
+            MailWorker[Email Notifications]
+            ReportWorker[Report Generator]
+        end
+    end
+
+    subgraph DB1 [PostgreSQL]
+        UTable[(Users)]
+        TTable[(Transactions)]
+        AuditTable[(Audit Logs)]
+    end
+
+    subgraph DB2 [MS SQL Server]
+        ReportsTable[(Financial Reports)]
+    end
+
+    subgraph Cache [Redis]
+        Sessions[(User Sessions)]
+        LastReports[(Cache Reports)]
+    end
+
+    subgraph Broker [Kafka/RabbitMQ]
+        Evt1((Event: TransactionCreated))
+        Evt2((Event: ReportGenerated))
+        Evt3((Event: UserAction))
+    end
+
+    subgraph Observability [Monitoring/Logging]
+        Grafana[(Grafana)]
+        Prometheus[(Prometheus)]
+        Logs[(Structured Logs - ELK/Cloudwatch)]
+    end
+
+    UI -->|REST API| Backend
+    WS <-->|Real-time| Backend
+
+    Auth --> UTable
+    Auth --> Sessions
+    Users --> UTable
+    Transactions --> TTable
+    Reports --> ReportsTable
+    Reports --> LastReports
+    Auditor --> AuditTable
+
+    Importer --> Workers
+    CSVWorker --> TTable
+    MailWorker --> UTable
+    ReportWorker --> ReportsTable
+
+    Transactions -->|Publish| Broker
+    Reports -->|Publish| Broker
+    Auditor -->|Publish| Broker
+
+    Broker --> CSVWorker
+    Broker --> MailWorker
+    Broker --> ReportWorker
+
+    Backend --> Logs
+    Backend --> Prometheus
+    Backend --> Grafana
