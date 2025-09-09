@@ -5,11 +5,11 @@ import {
   HttpStatus,
   Injectable,
 } from '@nestjs/common';
-import { UsersDto } from '../dtos';
+import { FindAllParams, UsersDto } from '../dtos';
 import { hashSync as bcryptHashSync } from 'bcrypt';
 import { InjectRepository } from '@nestjs/typeorm';
 import { UserEntity } from 'src/db/entities/users.entity';
-import { IsNull, Repository } from 'typeorm';
+import { FindOptionsWhere, ILike, IsNull, Like, Repository } from 'typeorm';
 
 @Injectable()
 export class UsersService {
@@ -161,11 +161,12 @@ export class UsersService {
     return this.mapEntityToDto(user, true);
   }
 
-  async findAll(): Promise<UsersDto[] | []> {
+  async findAll(params: FindAllParams): Promise<UsersDto[] | []> {
+    const searchParams: FindOptionsWhere<UserEntity> =
+      this.handleSearchParams(params);
+
     const usersEntities = await this.usersRepository.find({
-      where: {
-        deletedAt: IsNull(),
-      },
+      where: searchParams,
     });
 
     const returnData: UsersDto[] = [];
@@ -181,6 +182,44 @@ export class UsersService {
     });
 
     return returnData;
+  }
+
+  private handleSearchParams(
+    params: FindAllParams,
+  ): FindOptionsWhere<UserEntity> {
+    const searchParams: FindOptionsWhere<UserEntity> = {
+      deletedAt: IsNull(),
+    };
+
+    if (params.email) {
+      searchParams.email = Like(`%${params.email}%`);
+    }
+
+    if (params.name) {
+      searchParams.name = ILike(`%${params.name}%`);
+    }
+
+    if (params.username) {
+      searchParams.username = Like(`%${params.username}%`);
+    }
+
+    if (params.id) {
+      searchParams.id = params.id;
+    }
+
+    if (params.status) {
+      searchParams.status = params.status;
+    }
+
+    if (params.lastLogin) {
+      searchParams.lastLogin = new Date(params.lastLogin);
+    }
+
+    if (params.createdAt) {
+      searchParams.createdAt = new Date(params.createdAt);
+    }
+
+    return searchParams;
   }
 
   private mapEntityToDto(
