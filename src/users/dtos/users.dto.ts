@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-unsafe-call */
 import {
   IsBoolean,
   IsDateString,
@@ -30,7 +29,8 @@ export class UsersDto {
   @MinLength(8)
   @MaxLength(255)
   @IsStrongPassword()
-  password: string;
+  @IsOptional()
+  password?: string;
 
   @IsString()
   @IsEmail()
@@ -49,7 +49,7 @@ export class UsersDto {
 
   @IsOptional()
   @IsDateString()
-  deletedAt: Date;
+  deletedAt?: Date;
 
   @IsOptional()
   @IsDateString()

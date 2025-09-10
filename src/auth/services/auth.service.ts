@@ -29,7 +29,10 @@ export class AuthService {
       throw new NotFoundException(`User with username ${username} not found`);
     }
 
-    if (!bcryptCompareSync(password, foundUser.password)) {
+    if (
+      foundUser.password &&
+      !bcryptCompareSync(password, foundUser.password)
+    ) {
       throw new UnauthorizedException();
     }
 
