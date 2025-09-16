@@ -39,7 +39,7 @@ export class UsersController {
   @UseGuards(AuthGuard)
   @Get('/edit/:id')
   async edit(@Param('id') id: number): Promise<UsersDto | null> {
-    return await this.usersService.findById(id);
+    return await this.usersService.findById(id, true);
   }
 
   @UseGuards(AuthGuard)
