@@ -8,14 +8,16 @@ import {
 import { FindAllParams, UsersDto } from '../dtos';
 import { hashSync as bcryptHashSync } from 'bcrypt';
 import { InjectRepository } from '@nestjs/typeorm';
-import { UserEntity } from 'src/db/entities/users.entity';
+import { UserEntity } from 'src/db/entities/users/users.entity';
 import { FindOptionsWhere, ILike, IsNull, Like, Repository } from 'typeorm';
+import { EntityMapperHelper } from 'src/common/helpers';
 
 @Injectable()
 export class UsersService {
   constructor(
     @InjectRepository(UserEntity)
     private readonly usersRepository: Repository<UserEntity>,
+    private readonly entityMapperHelper: EntityMapperHelper,
   ) {}
 
   async create(userData: UsersDto): Promise<UsersDto> {
@@ -114,7 +116,15 @@ export class UsersService {
       },
     });
 
-    return this.mapEntityToDto(userEntity, returnsPass);
+    return this.entityMapperHelper.mapEntityToDto(
+      userEntity,
+      UsersDto,
+      returnsPass
+        ? {
+            excludeKeys: ['password'],
+          }
+        : {},
+    );
   }
 
   async findByEmail(email: string): Promise<UsersDto | null> {
@@ -131,7 +141,7 @@ export class UsersService {
       },
     });
 
-    return this.mapEntityToDto(userEntity);
+    return this.entityMapperHelper.mapEntityToDto(userEntity, UsersDto);
   }
 
   async findById(
@@ -156,9 +166,12 @@ export class UsersService {
         `No users found base on user id ${userId}`,
         HttpStatus.NOT_FOUND,
       );
-    if (!isToEdit) this.mapEntityToDto(user);
+    if (!isToEdit)
+      return this.entityMapperHelper.mapEntityToDto(user, UsersDto, {
+        excludeKeys: ['password'],
+      });
 
-    return this.mapEntityToDto(user, true);
+    return this.entityMapperHelper.mapEntityToDto(user, UsersDto);
   }
 
   async findAll(params: FindAllParams): Promise<UsersDto[] | []> {
@@ -174,7 +187,9 @@ export class UsersService {
     if (usersEntities.length == 0) return returnData;
 
     const mapedUsers = usersEntities.map((userEntity) => {
-      return this.mapEntityToDto(userEntity);
+      return this.entityMapperHelper.mapEntityToDto(userEntity, UsersDto, {
+        excludeKeys: ['password'],
+      });
     });
 
     mapedUsers.map((mappedUser) => {
@@ -220,27 +235,5 @@ export class UsersService {
     }
 
     return searchParams;
-  }
-
-  private mapEntityToDto(
-    userEntity: UserEntity | null,
-    returnsPass: boolean = false,
-  ): UsersDto | null {
-    if (!userEntity) return null;
-    const userDto: UsersDto = {
-      id: userEntity.id,
-      name: userEntity.name,
-      username: userEntity.username,
-      email: userEntity.email,
-      status: userEntity.status,
-      createdAt: userEntity.createdAt,
-      updatedAt: userEntity.updatedAt,
-      lastLogin: userEntity.lastLogin,
-      password: userEntity.password,
-    };
-
-    if (!returnsPass) delete userDto.password;
-
-    return userDto;
   }
 }

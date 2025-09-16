@@ -1,9 +1,17 @@
 import { ConfigService } from '@nestjs/config';
 import { config } from 'dotenv';
 import { DataSource } from 'typeorm';
-import { UserEntity } from './entities/users.entity';
-import { ProfileEntity } from './entities/profile.entity';
-import { UserProfileEntity } from './entities/user_profile.entity';
+import { UserEntity } from './entities/users/users.entity';
+import { ProfileEntity } from './entities/users/profile.entity';
+import { UserProfileEntity } from './entities/users/user-profile.entity';
+import {
+  AccountsPayableEntity,
+  AccountsReceivableEntity,
+  MonthEntity,
+  MonthlyCreditEntity,
+  MonthlyDebitEntity,
+  YearEntity,
+} from './entities/financial-balance';
 
 config();
 
@@ -16,7 +24,17 @@ export default new DataSource({
   username: configService.get<string>('DB_USER'),
   password: configService.get<string>('DB_PASSWORD'),
   database: configService.get<string>('DB_NAME'),
-  entities: [UserEntity, ProfileEntity, UserProfileEntity],
+  entities: [
+    UserEntity,
+    ProfileEntity,
+    UserProfileEntity,
+    YearEntity,
+    MonthEntity,
+    AccountsPayableEntity,
+    AccountsReceivableEntity,
+    MonthlyDebitEntity,
+    MonthlyCreditEntity,
+  ],
   migrations: [__dirname + '/migrations/*.ts'],
   synchronize: false,
 });
