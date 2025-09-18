@@ -6,6 +6,7 @@ import {
   CreateDateColumn,
   UpdateDateColumn,
   DeleteDateColumn,
+  JoinColumn,
 } from 'typeorm';
 import { AccountsReceivableEntity } from './account-receivable.entity';
 import { MonthEntity } from './months.entity';
@@ -18,11 +19,22 @@ export class MonthlyCreditEntity {
   @ManyToOne(
     () => AccountsReceivableEntity,
     (account) => account.monthlyCredits,
+    {
+      eager: true,
+    },
   )
+  @JoinColumn({ name: 'account_receivable_id' })
   accountReceivable: AccountsReceivableEntity;
 
+  @Column({ name: 'account_receivable_id' })
+  accountReceivableId: number;
+
   @ManyToOne(() => MonthEntity, (month) => month.credits)
+  @JoinColumn({ name: 'month_id' })
   month: MonthEntity;
+
+  @Column({ name: 'month_id' })
+  monthId: number;
 
   @Column({ default: false })
   received: boolean;

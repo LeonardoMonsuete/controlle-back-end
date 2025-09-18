@@ -1,11 +1,12 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Between, FindOptionsWhere, ILike, IsNull, Repository } from 'typeorm';
+import { FindOptionsWhere, IsNull, Repository } from 'typeorm';
 import {
   AccountsPayableDto,
   AccountsReceivableDto,
   FindAllAccountsPayableParams,
   FindAllAccountsReceivableParams,
+  MonthlyDebitDto,
 } from '../dtos';
 import {
   AccountsPayableEntity,
@@ -14,9 +15,10 @@ import {
   MonthlyDebitEntity,
 } from 'src/db/entities/financial-balance';
 import { EntityMapperHelper } from 'src/common/helpers';
+import { FinancialBalanceHandlersService } from './financial-balance-handlers.service';
 
 @Injectable()
-export class FinancialBalanceService {
+export class FinancialBalanceService extends FinancialBalanceHandlersService {
   constructor(
     @InjectRepository(AccountsPayableEntity)
     private readonly accountsPayableRepository: Repository<AccountsPayableEntity>,
@@ -27,7 +29,9 @@ export class FinancialBalanceService {
     @InjectRepository(MonthlyCreditEntity)
     private readonly monthlyCreditRepository: Repository<MonthlyCreditEntity>,
     private readonly entityMapperHelper: EntityMapperHelper,
-  ) {}
+  ) {
+    super();
+  }
   async findAllAccoountsPayable(
     params: FindAllAccountsPayableParams,
   ): Promise<AccountsPayableDto[] | []> {
@@ -55,7 +59,7 @@ export class FinancialBalanceService {
 
   async findAllAccoountsReceivable(
     params: FindAllAccountsReceivableParams,
-  ): Promise<AccountsPayableDto[] | []> {
+  ): Promise<AccountsReceivableDto[] | []> {
     const searchParams: FindOptionsWhere<any> =
       this.handleSearchParamsReceivable(params);
     const accountsReceivable = await this.accountsReceivableRepository.find({
@@ -80,101 +84,28 @@ export class FinancialBalanceService {
     return returnData;
   }
 
-  private handleSearchParamsPayable(
-    params: FindAllAccountsPayableParams,
-  ): FindOptionsWhere<any> {
-    const searchParams: FindOptionsWhere<any> = {
-      deletedAt: IsNull(),
-    };
+  async findMonthlyAccountsToPay(): Promise<MonthlyDebitDto[] | []> {
+    const accountsPayable = await this.monthlyDebitRepository.find({
+      where: {
+        deletedAt: IsNull(),
+      },
+    });
 
-    if (params.description) {
-      searchParams.description = ILike(`%${params.description}%`);
-    }
-
-    if (params.monthName) {
-      searchParams.monthName = ILike(`%${params.monthName}%`);
-    }
-
-    if (params.monthNumber) {
-      searchParams.monthNumber = params.monthNumber;
-    }
-
-    if (params.id) {
-      searchParams.id = params.id;
-    }
-
-    if (params.isExpired) {
-      searchParams.isExpired = params.isExpired;
-    }
-
-    if (params.isFixed) {
-      searchParams.isFixed = params.isFixed;
-    }
-
-    if (params.late) {
-      searchParams.late = params.late;
-    }
-
-    if (params.paymentMade) {
-      searchParams.paymentMade = params.paymentMade;
-    }
-
-    if (params.paymentDate) {
-      searchParams.paymentDate = new Date(params.paymentDate);
-    }
-
-    if (params.beginPaymentStartDate && params.endPaymentStartDate) {
-      searchParams.paymentDate = Between(
-        params.beginPaymentStartDate,
-        params.endPaymentStartDate,
-      );
-    }
-
-    if (params.startAmountScope && params.endAmountScope) {
-      searchParams.installmentAmount = Between(
-        params.startAmountScope,
-        params.endAmountScope,
-      );
-    }
-
-    return searchParams;
-  }
-
-  private handleSearchParamsReceivable(
-    params: FindAllAccountsReceivableParams,
-  ): FindOptionsWhere<any> {
-    const searchParams: FindOptionsWhere<any> = {
-      deletedAt: IsNull(),
-    };
-
-    if (params.description) {
-      searchParams.description = ILike(`%${params.description}%`);
-    }
-
-    if (params.monthName) {
-      searchParams.monthName = ILike(`%${params.monthName}%`);
-    }
-
-    if (params.monthNumber) {
-      searchParams.monthNumber = params.monthNumber;
-    }
-
-    if (params.id) {
-      searchParams.id = params.id;
-    }
-
-    if (params.isExpired) {
-      searchParams.isExpired = params.isExpired;
-    }
-
-    if (params.isFixed) {
-      searchParams.isFixed = params.isFixed;
-    }
-
-    if (params.late) {
-      searchParams.late = params.late;
-    }
-
-    return searchParams;
+    const returnData: MonthlyDebitDto[] = [];
+    if (accountsPayable.length == 0) return returnData;
+    const mapedMonthlyAccountsPayable = accountsPayable.map(
+      (accountPayableEntity) => {
+        return this.entityMapperHelper.mapEntityToDto(
+          accountPayableEntity,
+          MonthlyDebitDto,
+        );
+      },
+    );
+    mapedMonthlyAccountsPayable.map((mapedMonthlyAccountsPayable) => {
+      return mapedMonthlyAccountsPayable
+        ? returnData.push(mapedMonthlyAccountsPayable)
+        : null;
+    });
+    return returnData;
   }
 }

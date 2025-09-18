@@ -1,4 +1,6 @@
 import { IsBoolean, IsDateString, IsNumber, IsOptional } from 'class-validator';
+import { AccountsReceivableDto } from './accounts-receivable.dto';
+import { MonthsDto } from './months.dto';
 
 export class MonthlyCreditDto {
   @IsNumber()
@@ -8,8 +10,14 @@ export class MonthlyCreditDto {
   @IsNumber()
   accountReceivableId: number;
 
+  @IsOptional()
+  accountReceivable?: AccountsReceivableDto;
+
   @IsNumber()
   monthId: number;
+
+  @IsOptional()
+  month?: MonthsDto;
 
   @IsOptional()
   @IsBoolean()
