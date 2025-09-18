@@ -17,13 +17,13 @@ export class AccountsReceivableEntity {
   @Column()
   description: string;
 
-  @Column({ default: false })
+  @Column({ name: 'is_fixed' })
   isFixed: boolean;
 
-  @Column({ type: 'date', nullable: true })
+  @Column({ name: 'start_entry', type: 'date', nullable: true })
   startEntry?: Date;
 
-  @Column({ type: 'date', nullable: true })
+  @Column({ name: 'end_entry', type: 'date', nullable: true })
   endEntry?: Date;
 
   @Column({ default: false })
@@ -35,12 +35,12 @@ export class AccountsReceivableEntity {
   @OneToMany(() => MonthlyCreditEntity, (credit) => credit.accountReceivable)
   monthlyCredits: MonthlyCreditEntity[];
 
-  @CreateDateColumn()
+  @CreateDateColumn({ name: 'created_at' })
   createdAt: Date;
 
-  @UpdateDateColumn()
+  @UpdateDateColumn({ name: 'updated_at' })
   updatedAt: Date;
 
-  @DeleteDateColumn()
+  @DeleteDateColumn({ name: 'deleted_at' })
   deletedAt?: Date;
 }
