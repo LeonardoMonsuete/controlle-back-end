@@ -5,30 +5,33 @@ import {
   CreateDateColumn,
   UpdateDateColumn,
   DeleteDateColumn,
-  OneToMany,
 } from 'typeorm';
-import { MonthEntity } from './months.entity';
 
 @Entity('years')
 export class YearEntity {
   @PrimaryGeneratedColumn()
   id: number;
 
-  @Column()
+  @Column({
+    name: 'year_number',
+  })
   yearNumber: number;
 
   @Column({ default: false })
   closed: boolean;
 
-  @OneToMany(() => MonthEntity, (month) => month.year)
-  months: MonthEntity[];
-
-  @CreateDateColumn()
+  @CreateDateColumn({
+    name: 'created_at',
+  })
   createdAt: Date;
 
-  @UpdateDateColumn()
+  @UpdateDateColumn({
+    name: 'updated_at',
+  })
   updatedAt: Date;
 
-  @DeleteDateColumn()
+  @DeleteDateColumn({
+    name: 'deleted_at',
+  })
   deletedAt?: Date;
 }

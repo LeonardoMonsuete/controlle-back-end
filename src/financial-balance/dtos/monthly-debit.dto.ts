@@ -1,6 +1,5 @@
 import { IsBoolean, IsDateString, IsNumber, IsOptional } from 'class-validator';
 import { AccountsPayableDto } from './accounts-payable.dto';
-import { MonthsDto } from './months.dto';
 
 export class MonthlyDebitDto {
   @IsNumber()
@@ -15,9 +14,6 @@ export class MonthlyDebitDto {
 
   @IsNumber()
   monthId: number;
-
-  @IsOptional()
-  month?: MonthsDto;
 
   @IsOptional()
   @IsBoolean()

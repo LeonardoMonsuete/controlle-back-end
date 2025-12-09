@@ -2,13 +2,11 @@ import {
   Entity,
   PrimaryGeneratedColumn,
   Column,
-  ManyToOne,
   OneToMany,
   CreateDateColumn,
   UpdateDateColumn,
   DeleteDateColumn,
 } from 'typeorm';
-import { YearEntity } from './years.entity';
 import { MonthlyCreditEntity } from './monthly-credit.entity';
 import { MonthlyDebitEntity } from './monthly-debit.entity';
 
@@ -17,11 +15,20 @@ export class MonthEntity {
   @PrimaryGeneratedColumn()
   id: number;
 
-  @Column()
+  @Column({
+    name: 'month_number',
+  })
   monthNumber: number;
 
-  @ManyToOne(() => YearEntity, (year) => year.months)
-  year: YearEntity;
+  @Column({
+    name: 'month_name',
+  })
+  monthName: string;
+
+  @Column({
+    name: 'year_id',
+  })
+  yearId: number;
 
   @Column({ default: false })
   closed: boolean;
@@ -32,12 +39,18 @@ export class MonthEntity {
   @OneToMany(() => MonthlyDebitEntity, (debit) => debit.month)
   debits: MonthlyDebitEntity[];
 
-  @CreateDateColumn()
+  @CreateDateColumn({
+    name: 'created_at',
+  })
   createdAt: Date;
 
-  @UpdateDateColumn()
+  @UpdateDateColumn({
+    name: 'updated_at',
+  })
   updatedAt: Date;
 
-  @DeleteDateColumn()
+  @DeleteDateColumn({
+    name: 'deleted_at',
+  })
   deletedAt?: Date;
 }

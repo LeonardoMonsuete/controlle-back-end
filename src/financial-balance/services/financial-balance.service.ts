@@ -7,6 +7,7 @@ import {
   FindAllAccountsPayableParams,
   FindAllAccountsReceivableParams,
   MonthlyDebitDto,
+  GroupedMonthlyDebitsDto,
 } from '../dtos';
 import {
   AccountsPayableEntity,
@@ -16,6 +17,7 @@ import {
 } from 'src/db/entities/financial-balance';
 import { EntityMapperHelper } from 'src/common/helpers';
 import { FinancialBalanceHandlersService } from './financial-balance-handlers.service';
+import { I18nService } from 'nestjs-i18n';
 
 @Injectable()
 export class FinancialBalanceService extends FinancialBalanceHandlersService {
@@ -29,10 +31,11 @@ export class FinancialBalanceService extends FinancialBalanceHandlersService {
     @InjectRepository(MonthlyCreditEntity)
     private readonly monthlyCreditRepository: Repository<MonthlyCreditEntity>,
     private readonly entityMapperHelper: EntityMapperHelper,
+    private readonly i18n: I18nService,
   ) {
     super();
   }
-  async findAllAccoountsPayable(
+  async findAllAccountsPayable(
     params: FindAllAccountsPayableParams,
   ): Promise<AccountsPayableDto[] | []> {
     const searchParams: FindOptionsWhere<any> =
@@ -57,7 +60,7 @@ export class FinancialBalanceService extends FinancialBalanceHandlersService {
     return returnData;
   }
 
-  async findAllAccoountsReceivable(
+  async findAllAccountsReceivable(
     params: FindAllAccountsReceivableParams,
   ): Promise<AccountsReceivableDto[] | []> {
     const searchParams: FindOptionsWhere<any> =
@@ -84,28 +87,43 @@ export class FinancialBalanceService extends FinancialBalanceHandlersService {
     return returnData;
   }
 
-  async findMonthlyAccountsToPay(): Promise<MonthlyDebitDto[] | []> {
+  async findMonthlyAccountsToPay(): Promise<GroupedMonthlyDebitsDto[] | []> {
     const accountsPayable = await this.monthlyDebitRepository.find({
       where: {
         deletedAt: IsNull(),
       },
+      relations: ['month'],
     });
 
-    const returnData: MonthlyDebitDto[] = [];
-    if (accountsPayable.length == 0) return returnData;
-    const mapedMonthlyAccountsPayable = accountsPayable.map(
-      (accountPayableEntity) => {
-        return this.entityMapperHelper.mapEntityToDto(
-          accountPayableEntity,
+    if (accountsPayable.length === 0) return [];
+    // console.log('accountsPayable', accountsPayable);
+    const groupedByMonth = accountsPayable.reduce(
+      (acc, debit) => {
+        console.log('acc', acc);
+        console.log('debit', debit);
+        const monthId = debit.monthId;
+        if (!acc[monthId]) {
+          acc[monthId] = {
+            monthId: monthId,
+            monthName: this.i18n.translate(
+              `common.months.${debit.month.monthName.toLowerCase()}`,
+              { lang: 'pt' },
+            ),
+            accounts: [],
+          };
+        }
+        const mappedDebit = this.entityMapperHelper.mapEntityToDto(
+          debit,
           MonthlyDebitDto,
         );
+        if (mappedDebit) {
+          acc[monthId].accounts.push(mappedDebit);
+        }
+        return acc;
       },
+      {} as Record<number, GroupedMonthlyDebitsDto>,
     );
-    mapedMonthlyAccountsPayable.map((mapedMonthlyAccountsPayable) => {
-      return mapedMonthlyAccountsPayable
-        ? returnData.push(mapedMonthlyAccountsPayable)
-        : null;
-    });
-    return returnData;
+
+    return Object.values(groupedByMonth);
   }
 }

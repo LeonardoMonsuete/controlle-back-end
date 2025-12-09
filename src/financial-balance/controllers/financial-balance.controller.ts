@@ -6,7 +6,7 @@ import {
   AccountsReceivableDto,
   FindAllAccountsPayableParams,
   FindAllAccountsReceivableParams,
-  MonthlyDebitDto,
+  GroupedMonthlyDebitsDto,
 } from '../dtos';
 
 @UseGuards(AuthGuard)
@@ -20,20 +20,18 @@ export class FinancialBalanceController {
   async listAccountPayments(
     @Query() params: FindAllAccountsPayableParams,
   ): Promise<AccountsPayableDto[] | []> {
-    return await this.financialBalanceService.findAllAccoountsPayable(params);
+    return await this.financialBalanceService.findAllAccountsPayable(params);
   }
 
   @Get('/accounts-receivable')
   async listAccountReceivable(
     @Query() params: FindAllAccountsReceivableParams,
   ): Promise<AccountsReceivableDto[] | []> {
-    return await this.financialBalanceService.findAllAccoountsReceivable(
-      params,
-    );
+    return await this.financialBalanceService.findAllAccountsReceivable(params);
   }
 
   @Get('/monthly-accounts/payables')
-  async listMonthlyAccountsToPay(): Promise<MonthlyDebitDto[] | []> {
+  async listMonthlyAccountsToPay(): Promise<GroupedMonthlyDebitsDto[] | []> {
     return await this.financialBalanceService.findMonthlyAccountsToPay();
   }
 }
